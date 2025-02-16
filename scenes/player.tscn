@@ -8,6 +8,7 @@
 size = Vector2(10, 10)
 
 [node name="Player" type="CharacterBody2D"]
+physics_interpolation_mode = 1
 script = ExtResource("1_f28ux")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

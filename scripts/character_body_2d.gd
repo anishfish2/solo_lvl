@@ -1,29 +1,32 @@
 extends CharacterBody2D
 
-
 const SPEED = 300.0
 const JUMP_VELOCITY = -400.0
-
+const GRAVITY = 980.0  # Adjust as needed for your game
+var floor_normal = Vector2(0, -1)
 
 func _physics_process(delta: float) -> void:
-	# Add the gravity.
+	# Apply gravity when not on the floor.
 	if not is_on_floor():
-		velocity += get_gravity() * delta
+		velocity.y += GRAVITY * delta
 
+	# Handle horizontal movement.
+	var direction = Input.get_axis("ui_left", "ui_right")
+	if direction != 0:
+		velocity.x = direction * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+	
 	# Handle jump.
 	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
-	var direction := Input.get_axis("ui_left", "ui_right")
-	if direction:
-		velocity.x = direction * SPEED
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-
-	var collision_info = move_and_collide(velocity * delta)
-	print(collision_info)
-	if collision_info:
-		velocity = velocity.bounce(collision_info.get_normal())
-	#move_and_slide()
+	# Move the character (no parameters needed in Godot 4).
+	move_and_slide()
+	
+	# Check collisions and reflect velocity if colliding with walls or the top.
+	for i in range(get_slide_collision_count()):
+		var collision = get_slide_collision(i)
+		var col_normal = collision.get_normal()
+		if col_normal != floor_normal:
+			velocity = velocity.bounce(col_normal)
